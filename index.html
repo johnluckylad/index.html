@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Motorcycle Fund | Monthly Budget</title>
+<style>
+:root{--bg:#f4f6f8;--panel:#fff;--ink:#18212f;--muted:#687386;--line:#e5e9ef;--accent:#2457d6;--accent2:#eaf0ff;--green:#16845b;--yellow:#e6a400;--red:#d83b45;--shadow:0 8px 28px rgba(25,40,70,.07)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+header{background:#111d35;color:#fff;padding:25px max(20px,calc((100% - 1100px)/2));}
+header .eyebrow{color:#a9bee9;font-size:12px;text-transform:uppercase;letter-spacing:.12em;font-weight:700}
+header h1{margin:5px 0 3px;font-size:clamp(23px,4vw,32px)}header p{margin:0;color:#c6d1e5}
+main{max-width:1100px;margin:22px auto;padding:0 16px 48px}
+.toolbar{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:16px}
+.monthbox{display:flex;gap:9px;align-items:center;background:var(--panel);padding:9px 12px;border:1px solid var(--line);border-radius:12px}
+input,select,button{font:inherit}input,select{width:100%;border:1px solid #d9e0e9;border-radius:9px;padding:10px 11px;background:#fff;color:var(--ink);min-width:0}
+input[type=month]{width:auto;border:0;padding:2px;background:transparent}
+button{border:0;border-radius:9px;padding:10px 14px;font-weight:650;cursor:pointer}
+.primary{background:var(--accent);color:#fff}.secondary{background:#edf1f7;color:#27364d}.danger{background:#fff0f0;color:#b4232b}.small{padding:7px 10px;font-size:13px}
+.tabs{display:flex;gap:7px;background:#e9edf3;padding:5px;border-radius:12px;margin-bottom:16px}
+.tab{flex:1;background:transparent;color:#586477}.tab.active{background:#fff;color:#17233a;box-shadow:0 2px 8px #18212f12}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:19px;box-shadow:var(--shadow);margin-bottom:15px}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+.grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.stat{padding:15px;border:1px solid var(--line);border-radius:13px;background:#fff}.stat .label{font-size:12px;color:var(--muted);margin-bottom:5px}.stat .value{font-size:25px;font-weight:750;letter-spacing:-.03em}.stat .sub{font-size:12px;color:var(--muted);margin-top:3px}
+h2{font-size:18px;margin:0 0 14px}h3{font-size:15px;margin:0 0 10px}
+.progress{height:12px;border-radius:20px;background:#edf0f5;overflow:hidden;margin:12px 0 8px}.progress>div{height:100%;background:var(--green);border-radius:20px;transition:width .2s}
+.milestones{display:flex;justify-content:space-between;color:var(--muted);font-size:11px}
+.field{display:flex;flex-direction:column;gap:6px}.field label{font-size:12px;font-weight:650;color:#596579}
+.formgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.row{display:flex;gap:9px;align-items:center}.row>*{flex:1}
+table{width:100%;border-collapse:collapse}td,th{padding:10px 7px;border-bottom:1px solid var(--line);text-align:left}th{font-size:12px;color:var(--muted);font-weight:650}td:last-child,th:last-child{text-align:right}.amount{font-variant-numeric:tabular-nums;font-weight:650}
+.note{color:var(--muted);font-size:12px}.positive{color:var(--green)}.negative{color:var(--red)}
+.bar{height:13px;background:#edf0f5;border-radius:20px;overflow:hidden;margin:10px 0}.bar>div{height:100%;width:0;background:var(--green);transition:width .2s}.bar.warning>div{background:var(--yellow)}.bar.over>div{background:var(--red)}
+.list{display:flex;flex-direction:column;gap:9px}.item{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:11px;border:1px solid var(--line);border-radius:10px}
+.hidden{display:none!important}.empty{color:var(--muted);padding:14px 0;text-align:center}
+.actions{display:flex;gap:8px;flex-wrap:wrap}.savebar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.status{font-size:12px;color:var(--muted)}.divider{border:0;border-top:1px solid var(--line);margin:17px 0}
+@media(max-width:700px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.formgrid{grid-template-columns:repeat(2,minmax(0,1fr))}.panel{padding:15px}}
+@media(max-width:440px){.grid,.grid.two,.formgrid{grid-template-columns:1fr}.tabs{gap:3px}.tab{font-size:12px;padding:10px 5px}.stat .value{font-size:22px}}
+</style>
+</head>
+<body>
+<header><div class="eyebrow">Personal finance tracker</div><h1>Motorcycle Fund</h1><p>A clear monthly budget, built around your actual numbers.</p></header>
+<main>
+  <div class="toolbar">
+    <div class="monthbox"><span class="note">Budget month</span><input id="monthPicker" type="month" aria-label="Budget month"></div>
+    <div class="actions"><button class="secondary" id="exportBtn">Export backup</button><button class="secondary" id="importBtn">Import backup</button><input id="importFile" type="file" accept="application/json" class="hidden"></div>
+  </div>
+  <nav class="tabs" aria-label="Main sections">
+    <button class="tab active" data-tab="savings">Savings progress</button>
+    <button class="tab" data-tab="income">Income & breakdown</button>
+    <button class="tab" data-tab="expenses">Expenses log</button>
+  </nav>
+
+  <section id="savings" class="tabpage">
+    <div class="grid">
+      <div class="stat"><div class="label">Motorcycle fund</div><div class="value" id="bikeTotal">0.00 JOD</div><div class="sub">of 4,000.00 JOD goal</div></div>
+      <div class="stat"><div class="label">Saved this month</div><div class="value" id="monthSaved">150.00 JOD</div><div class="sub">Fixed monthly contribution</div></div>
+      <div class="stat"><div class="label">Still needed</div><div class="value" id="bikeLeft">4,000.00 JOD</div><div class="sub" id="bikePercent">0% complete</div></div>
+    </div>
+    <div class="panel" style="margin-top:15px">
+      <div class="row"><h2 style="margin:0">Motorcycle goal</h2><span class="note" id="milestoneText" style="text-align:right">0% complete</span></div>
+      <div class="progress"><div id="bikeProgress" style="width:0%"></div></div>
+      <div class="milestones"><span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div>
+      <p class="note">Your 150 JOD fixed contribution is counted once for each saved month. Extra transfers are added when you allocate them.</p>
+    </div>
+    <div class="panel">
+      <h2>Other savings goals</h2>
+      <div class="formgrid">
+        <div class="field"><label for="goalName">Goal name</label><input id="goalName" placeholder="e.g. Holiday"></div>
+        <div class="field"><label for="goalTarget">Target (JOD)</label><input id="goalTarget" type="number" min="0" step=".01" placeholder="Optional"></div>
+        <div class="field" style="justify-content:end"><button class="primary" id="addGoal">Create goal</button></div>
+      </div>
+      <div id="goalsList" class="list" style="margin-top:14px"><div class="empty">No custom goals yet.</div></div>
+    </div>
+  </section>
+
+  <section id="income" class="tabpage hidden">
+    <div class="grid">
+      <div class="stat"><div class="label">Total earnings</div><div class="value" id="totalIncome">660.00 JOD</div><div class="sub">Salary + overtime + incentives</div></div>
+      <div class="stat"><div class="label">Available to spend</div><div class="value" id="available">129.00 JOD</div><div class="sub">Including rollover / allowance increase</div></div>
+      <div class="stat"><div class="label">Remaining to allocate</div><div class="value" id="remaining">129.00 JOD</div><div class="sub">After expenses and allocations</div></div>
+    </div>
+    <div class="panel" style="margin-top:15px">
+      <h2>Monthly income inputs</h2>
+      <div class="formgrid">
+        <div class="field"><label>Overtime hours</label><input id="overtime" type="number" min="0" step=".01" value="0"></div>
+        <div class="field"><label>Cash upgrade incentives (JOD)</label><input id="incentives" type="number" min="0" step=".01" value="0"></div>
+        <div class="field"><label>Overtime rate</label><input value="7.021 JOD / hour" disabled></div>
+      </div>
+      <hr class="divider">
+      <h3>Fixed salary breakdown</h3>
+      <table><tbody>
+        <tr><td>Base salary</td><td class="amount">660.00 JOD</td></tr>
+        <tr><td>Main loan</td><td class="amount">−300.00 JOD</td></tr>
+        <tr><td>Second loan</td><td class="amount">−31.00 JOD</td></tr>
+        <tr><td>Jameia</td><td class="amount">−50.00 JOD</td></tr>
+        <tr><td>Motorcycle fixed savings</td><td class="amount">−150.00 JOD</td></tr>
+        <tr><td><strong>Base living allowance</strong></td><td class="amount positive"><strong>129.00 JOD</strong></td></tr>
+      </tbody></table>
+      <p class="note">The fixed deductions and savings total 531 JOD, leaving 129 JOD from the 660 JOD salary.</p>
+    </div>
+    <div class="panel">
+      <h2>Remaining money allocation</h2>
+      <p class="note">Remaining money is your unspent allowance plus overtime, incentives and rollover, less any allocations already made.</p>
+      <div class="formgrid">
+        <div class="field"><label>Allocate to</label><select id="allocationType"><option value="bike">Motorcycle fund</option><option value="rollover">Next month's rollover</option><option value="goal">Custom savings goal</option></select></div>
+        <div class="field hidden" id="goalSelectWrap"><label>Custom goal</label><select id="allocationGoal"></select></div>
+        <div class="field"><label>Amount (JOD)</label><input id="allocationAmount" type="number" min="0" step=".01" placeholder="0.00"></div>
+      </div>
+      <div class="actions" style="margin-top:12px"><button class="primary" id="allocateBtn">Allocate remaining money</button></div>
+      <div id="allocationHistory" class="list" style="margin-top:13px"></div>
+    </div>
+  </section>
+
+  <section id="expenses" class="tabpage hidden">
+    <div class="grid two">
+      <div class="stat"><div class="label">Spending allowance</div><div class="value" id="spendingBudget">129.00 JOD</div><div class="sub">129 JOD base + manual increase + rollover</div></div>
+      <div class="stat"><div class="label">Total expenses</div><div class="value" id="expenseTotal">0.00 JOD</div><div class="sub" id="expenseLeft">129.00 JOD remaining</div></div>
+    </div>
+    <div class="panel" style="margin-top:15px">
+      <div class="row"><h2 style="margin:0">Allowance used</h2><strong id="budgetPercent">0%</strong></div>
+      <div class="bar" id="budgetBar"><div id="budgetFill"></div></div>
+      <p class="note" id="budgetMessage">You're within your monthly allowance.</p>
+      <hr class="divider">
+      <h3>Increase this month's allowance</h3>
+      <div class="row"><div class="field"><label>Additional amount (JOD)</label><input id="allowanceIncrease" type="number" min="0" step=".01" placeholder="e.g. 20"></div><button class="secondary" id="increaseAllowance" style="align-self:end">Add allowance</button></div>
+      <p class="note">This is a manual budget adjustment, not new income. It will be included in this month's available spending amount.</p>
+    </div>
+    <div class="panel">
+      <h2>Add an expense</h2>
+      <div class="formgrid">
+        <div class="field"><label>Description</label><input id="expenseDescription" placeholder="e.g. Lunch"></div>
+        <div class="field"><label>Amount (JOD)</label><input id="expenseAmount" type="number" min=".01" step=".01" placeholder="0.00"></div>
+        <div class="field"><label>Date</label><input id="expenseDate" type="date"></div>
+      </div>
+      <div class="actions" style="margin-top:12px"><button class="primary" id="addExpense">Add expense</button></div>
+    </div>
+    <div class="panel">
+      <h2>Monthly expense summary</h2>
+      <div id="expensesList" class="list"><div class="empty">No expenses logged for this month.</div></div>
+      <hr class="divider">
+      <div class="row"><strong>Total expenses</strong><strong id="expenseSummaryTotal">0.00 JOD</strong></div>
+    </div>
+  </section>
+
+  <div class="panel savebar">
+    <div><strong>Save your progress</strong><div class="status" id="saveStatus">Changes are not saved yet.</div></div>
+    <button class="primary" id="saveBtn">Save Progress</button>
+  </div>
+  <p class="note">Your data is stored in this browser on this device. Use Export backup on one device and Import backup on another to transfer it. Automatic cloud syncing between devices requires a separate online database.</p>
+</main>
+<script>
+(() => {
+  'use strict';
+  const KEY = 'motorcycleBudgetTracker_v1';
+  const BASE = 660, LOAN1 = 300, LOAN2 = 31, JAMEIA = 50, FIXED_SAVING = 150, BASE_ALLOWANCE = 129, RATE = 7.021, BIKE_TARGET = 4000;
+  const $ = id => document.getElementById(id);
+  const money = n => `${(Number(n)||0).toFixed(2)} JOD`;
+  const num = id => Math.max(0, Number($(id).value) || 0);
+  const todayMonth = new Date().toISOString().slice(0,7);
+  let data = {months:{}, goals:[], bikeExtra:0, bikeMonths:[]};
+  let month = todayMonth, dirty = false;
+
+  function freshMonth(carry=0){ return {overtime:0,incentives:0,expenses:[],allocations:[],allowanceIncrease:0,rolloverIn:carry,fixedSaved:false}; }
+  function loadAll(){
+    try { const raw=localStorage.getItem(KEY); if(raw){const parsed=JSON.parse(raw); if(parsed && parsed.months) data={...data,...parsed};} } catch(e) { console.warn('Could not load saved data',e); }
+    if(!data.months[month]) data.months[month]=freshMonth(findCarry(month));
+  }
+  function findCarry(m){
+    const keys=Object.keys(data.months).filter(k=>k<m).sort();
+    if(!keys.length) return 0;
+    const prev=data.months[keys[keys.length-1]];
+    return Number(prev.rolloverOut)||0;
+  }
+  function current(){ if(!data.months[month]) data.months[month]=freshMonth(findCarry(month)); return data.months[month]; }
+  function setDirty(){dirty=true;$('saveStatus').textContent='Unsaved changes. Press Save Progress to keep them.';}
+  function expensesTotal(m=current()){return m.expenses.reduce((s,e)=>s+Number(e.amount||0),0);}
+  function allocationsTotal(m=current()){return m.allocations.reduce((s,a)=>s+Number(a.amount||0),0);}
+  function overtimePay(m=current()){return Number(m.overtime||0)*RATE;}
+  function available(m=current()){return BASE_ALLOWANCE+overtimePay(m)+Number(m.incentives||0)+Number(m.rolloverIn||0)+Number(m.allowanceIncrease||0);}
+  function remaining(m=current()){return available(m)-expensesTotal(m)-allocationsTotal(m);}
+  function bikeTotal(){return data.bikeMonths.reduce((s,m)=>s+FIXED_SAVING,0)+Number(data.bikeExtra||0);}
+  function fmtDate(s){try{return new Date(s+'T12:00:00').toLocaleDateString(undefined,{day:'numeric',month:'short'});}catch(e){return s;}}
+  function render(){
+    const m=current(), exp=expensesTotal(m), budget=BASE_ALLOWANCE+Number(m.allowanceIncrease||0)+Number(m.rolloverIn||0);
+    const spentPct=budget>0?exp/budget*100:(exp>0?100:0), bike=bikeTotal(), pct=Math.min(100,bike/BIKE_TARGET*100);
+    $('monthPicker').value=month;
+    $('bikeTotal').textContent=money(bike); $('monthSaved').textContent=money(FIXED_SAVING+(m.allocations.filter(a=>a.type==='bike').reduce((s,a)=>s+a.amount,0)));
+    $('bikeLeft').textContent=money(Math.max(0,BIKE_TARGET-bike)); $('bikePercent').textContent=`${pct.toFixed(1)}% complete`;
+    $('milestoneText').textContent=`${pct.toFixed(1)}% complete`; $('bikeProgress').style.width=pct+'%';
+    $('totalIncome').textContent=money(BASE+overtimePay(m)+Number(m.incentives||0));
+    $('available').textContent=money(available(m)); $('remaining').textContent=money(remaining(m));
+    $('overtime').value=m.overtime||0; $('incentives').value=m.incentives||0;
+    $('spendingBudget').textContent=money(budget); $('expenseTotal').textContent=money(exp);
+    $('expenseLeft').textContent=money(budget-exp)+' remaining'; $('expenseSummaryTotal').textContent=money(exp);
+    $('budgetPercent').textContent=`${spentPct.toFixed(1)}%`; $('budgetFill').style.width=Math.min(100,spentPct)+'%';
+    $('budgetBar').className='bar'+(spentPct>90?' over':spentPct>75?' warning':'');
+    $('budgetMessage').textContent=spentPct>100?'You have exceeded this month’s allowance.':spentPct>90?'You have used more than 90% of your allowance.':spentPct>75?'You have used more than 75% of your allowance.':'You’re within your monthly allowance.';
+    $('allowanceIncrease').value='';
+    renderGoals(); renderExpenses(); renderAllocations();
+    $('saveStatus').textContent=dirty?'Unsaved changes. Press Save Progress to keep them.':'Progress saved in this browser.';
+  }
+  function renderGoals(){
+    const list=$('goalsList'), sel=$('allocationGoal');
+    list.innerHTML=''; sel.innerHTML='';
+    if(!data.goals.length) list.innerHTML='<div class="empty">No custom goals yet.</div>';
+    data.goals.forEach(g=>{
+      const funded=Number(g.funded||0), target=Number(g.target||0);
+      const item=document.createElement('div'); item.className='item';
+      const info=document.createElement('div'); info.style.flex='1';
+      const name=document.createElement('strong'); name.textContent=g.name;
+      const detail=document.createElement('div'); detail.className='note'; detail.textContent=target>0?`${money(funded)} saved of ${money(target)}`:`${money(funded)} saved`;
+      info.append(name,detail);
+      if(target>0){const bar=document.createElement('div');bar.className='progress';bar.style.margin='7px 0 0';const fill=document.createElement('div');fill.style.width=Math.min(100,funded/target*100)+'%';bar.append(fill);info.append(bar);}
+      const del=document.createElement('button');del.className='danger small';del.textContent='Delete';del.addEventListener('click',()=>{if(confirm(`Delete “${g.name}”? Its recorded balance will be removed from this tracker.`)){data.goals=data.goals.filter(x=>x.id!==g.id);setDirty();render();}});
+      item.append(info,del);list.append(item);
+      const opt=document.createElement('option');opt.value=g.id;opt.textContent=g.name;sel.append(opt);
+    });
+    $('goalSelectWrap').classList.toggle('hidden',$('allocationType').value!=='goal');
+  }
+  function renderExpenses(){
+    const list=$('expensesList');list.innerHTML='';
+    const m=current();
+    if(!m.expenses.length){list.innerHTML='<div class="empty">No expenses logged for this month.</div>';return;}
+    [...m.expenses].sort((a,b)=>b.date.localeCompare(a.date)).forEach(e=>{
+      const item=document.createElement('div');item.className='item';
+      const info=document.createElement('div');const name=document.createElement('strong');name.textContent=e.description;const date=document.createElement('div');date.className='note';date.textContent=fmtDate(e.date);info.append(name,date);
+      const right=document.createElement('div');right.className='row';right.style.flex='0 0 auto';const amount=document.createElement('strong');amount.className='amount';amount.textContent=money(e.amount);const del=document.createElement('button');del.className='danger small';del.textContent='Delete';del.addEventListener('click',()=>{m.expenses=m.expenses.filter(x=>x.id!==e.id);setDirty();render();});right.append(amount,del);item.append(info,right);list.append(item);
+    });
+  }
+  function renderAllocations(){
+    const list=$('allocationHistory');list.innerHTML='';
+    const m=current();
+    if(!m.allocations.length){list.innerHTML='<div class="empty">No allocations made this month.</div>';return;}
+    m.allocations.forEach(a=>{const item=document.createElement('div');item.className='item';const label=document.createElement('span');label.textContent=a.label;const val=document.createElement('strong');val.textContent=money(a.amount);item.append(label,val);list.append(item);});
+  }
+  function save(){
+    const m=current();
+    m.fixedSaved=true;
+    if(!data.bikeMonths.includes(month)) data.bikeMonths.push(month);
+    try{localStorage.setItem(KEY,JSON.stringify(data));dirty=false;$('saveStatus').textContent='Saved successfully on this device.';render();}catch(e){$('saveStatus').textContent='Could not save. Your browser storage may be full or unavailable.';}
+  }
+  function switchMonth(next){
+    if(!next)return;
+    if(dirty && !confirm('You have unsaved changes. Switch month and discard those unsaved changes?')){$('monthPicker').value=month;return;}
+    month=next;
+    if(!data.months[month]) data.months[month]=freshMonth(findCarry(month));
+    dirty=false;render();
+  }
+  document.querySelectorAll('.tab').forEach(btn=>btn.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b===btn));
+    document.querySelectorAll('.tabpage').forEach(p=>p.classList.toggle('hidden',p.id!==btn.dataset.tab));
+  }));
+  $('monthPicker').addEventListener('change',e=>switchMonth(e.target.value));
+  ['overtime','incentives'].forEach(id=>$(id).addEventListener('input',()=>{const m=current();m[id]=num(id);setDirty();renderLive();}));
+  function renderLive(){
+    const m=current(),exp=expensesTotal(m),budget=BASE_ALLOWANCE+Number(m.allowanceIncrease||0)+Number(m.rolloverIn||0),pct=budget>0?exp/budget*100:0;
+    $('totalIncome').textContent=money(BASE+overtimePay(m)+Number(m.incentives||0));$('available').textContent=money(available(m));$('remaining').textContent=money(remaining(m));
+    $('budgetPercent').textContent=`${pct.toFixed(1)}%`;$('budgetFill').style.width=Math.min(100,pct)+'%';$('budgetBar').className='bar'+(pct>90?' over':pct>75?' warning':'');
+  }
+  $('addGoal').addEventListener('click',()=>{
+    const name=$('goalName').value.trim(),target=Math.max(0,Number($('goalTarget').value)||0);
+    if(!name){alert('Please enter a goal name.');return;}
+    data.goals.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now()),name,target,funded:0});$('goalName').value='';$('goalTarget').value='';setDirty();render();
+  });
+  $('allocationType').addEventListener('change',renderGoals);
+  $('allocateBtn').addEventListener('click',()=>{
+    const m=current(),amount=Math.round(num('allocationAmount')*100)/100,type=$('allocationType').value;
+    if(amount<=0){alert('Enter an amount greater than zero.');return;}
+    if(amount>remaining(m)+0.001){alert(`You can allocate up to ${money(Math.max(0,remaining(m)))}.`);return;}
+    let label='';
+    if(type==='bike'){data.bikeExtra=Number(data.bikeExtra||0)+amount;label='Motorcycle fund';}
+    else if(type==='rollover'){m.rolloverOut=Number(m.rolloverOut||0)+amount;label='Next month rollover';}
+    else{const g=data.goals.find(x=>x.id===$('allocationGoal').value);if(!g){alert('Create or select a custom goal first.');return;}g.funded=Number(g.funded||0)+amount;label=g.name;}
+    m.allocations.push({type,amount,label});$('allocationAmount').value='';setDirty();render();
+  });
+  $('increaseAllowance').addEventListener('click',()=>{
+    const amount=Math.round(num('allowanceIncrease')*100)/100;if(amount<=0){alert('Enter an amount greater than zero.');return;}
+    current().allowanceIncrease=Number(current().allowanceIncrease||0)+amount;setDirty();render();
+  });
+  $('addExpense').addEventListener('click',()=>{
+    const description=$('expenseDescription').value.trim(),amount=Math.round(num('expenseAmount')*100)/100,date=$('expenseDate').value||new Date().toISOString().slice(0,10);
+    if(!description||amount<=0){alert('Enter an expense description and an amount greater than zero.');return;}
+    current().expenses.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now()),description,amount,date});$('expenseDescription').value='';$('expenseAmount').value='';setDirty();render();
+  });
+  $('saveBtn').addEventListener('click',save);
+  $('exportBtn').addEventListener('click',()=>{
+    const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='motorcycle-budget-backup.json';a.click();URL.revokeObjectURL(url);
+  });
+  $('importBtn').addEventListener('click',()=>$('importFile').click());
+  $('importFile').addEventListener('change',async e=>{
+    const file=e.target.files[0];if(!file)return;
+    try{const parsed=JSON.parse(await file.text());if(!parsed||!parsed.months||!Array.isArray(parsed.goals)||!Array.isArray(parsed.bikeMonths))throw new Error('Invalid backup');data=parsed;if(!data.months[month])data.months[month]=freshMonth(findCarry(month));dirty=true;render();alert('Backup imported. Press Save Progress to keep it in this browser.');}
+    catch(err){alert('This file does not look like a valid tracker backup.');}
+    e.target.value='';
+  });
+  $('expenseDate').value=new Date().toISOString().slice(0,10);
+  loadAll();render();
+})();
+</script>
+</body>
+</html>
